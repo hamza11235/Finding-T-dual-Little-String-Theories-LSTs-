@@ -10,13 +10,15 @@ from sage.geometry.polyhedron.ppl_lattice_polytope import LatticePolytope_PPL
 
 #Functions 
 
-"""
-Generate 4D Reflexive Polytope from a list of 4D vertices.
-
-Every such polytope is in a one-to-one correspondence with a toric Calabi-Yau (CY) Threefold.
-"""
 
 def get_polytope(vertices: list[[list]]):
+    
+    """
+    Generate 4D Reflexive Polytope from a list of 4D vertices.
+
+    Every such polytope is in a one-to-one correspondence with a toric Calabi-Yau (CY) Threefold.
+    """
+    
     P0 = Polyhedron(vertices)
     if P0.is_reflexive():
         print('All Good');
@@ -30,12 +32,16 @@ def get_polytope(vertices: list[[list]]):
         print(Ptest.polar().poly_x("g"))
     return Ptest.polar()
 
-"""
-The class of CY's we are interested in admit both K3 and T2 (torus) fibrations, which means the 4D polytope has reflexive subpolytopes of dimensions 3 and 2. 
 
-Here we extract the 3D subpolytope, as well as the number of 2D subpolytopes (which gives us the number of T-dual LSTs)
-"""
+
 def get_3D_2D_reflexive(p: LatticePolytope):
+    
+    """
+    The class of CY's we are interested in admit both K3 and T2 (torus) fibrations, which means the 4D polytope has reflexive subpolytopes of dimensions 3 and 2. 
+
+    Here we extract the 3D subpolytope, as well as the number of 2D subpolytopes (which gives us the number of T-dual LSTs)
+    """
+    
     K3=list()
     lemp=p.points()
     for i in range(len(lemp)):
@@ -51,10 +57,14 @@ def get_3D_2D_reflexive(p: LatticePolytope):
     pq = LatticePolytope_PPL(nk3)
     return shaba, len(list(pq.fibration_generator(2)))
 
-"""
-Extracting the T2 fibration (and hence the LST), the projection vectors for the 2D base, and a plot of the 2D subpolytope in the 3D polytope.
-"""
+
+
 def pick_fibration(shaba: LatticePolytope, fibind: int):
+    
+    """
+    Extracting the T2 fibration (and hence the LST), the projection vectors for the 2D base, and a plot of the 2D subpolytope in the 3D polytope.
+    """
+    
     #Get polytope data
     blks=shaba.vertices()
     nk3=np.array(blks).tolist()
@@ -75,12 +85,14 @@ def pick_fibration(shaba: LatticePolytope, fibind: int):
     plot=ct1+nm1
     return torus, comp1,comp2, ct1+nm1
 
-"""
-Assigning variables to the points on the polytope (divisors), distinguishing the torus vertices.
-"""
 
-#Assigning variables to divisors
+
 def divgen(n,toruscoords):
+    
+    """
+    Assigning variables to the points on the polytope (divisors), distinguishing the torus vertices.
+    """
+    
     var = [0] * n
     letvar = [0] * toruscoords
     lettersf=['X', 'Y', 'Z', 'L', 'M', 'N','P', 'Q']
@@ -91,19 +103,27 @@ def divgen(n,toruscoords):
         var[i]=sym.expand(sym.symbols('a_' +str(i)))
     return letvar,var
 
-"""
-Generating constants for the CY hypersurface equation.
-"""
+
+
 def coeffgen(n):
+    
+    """
+    Generating constants for the CY hypersurface equation.
+    """
+    
     var = [0] * n
     for i in range(n):
         var[i]=sym.expand(sym.symbols('c_' +str(i)))
     return var
 
-"""
-Implementing the Batyrev construction which maps the set of vertices corresponding to a 4D reflexive polytope to the hypersurface equation for a CY threefold.
-"""
+
+
 def batryev(polyp,dualp,arrcoeff,arrcoords):
+    
+    """
+    Implementing the Batyrev construction which maps the set of vertices corresponding to a 4D reflexive polytope to the hypersurface equation for a CY threefold.
+    """
+    
     hyp=0
     for i in range(len(dualp)):
         t=1
@@ -115,10 +135,13 @@ def batryev(polyp,dualp,arrcoeff,arrcoords):
     return hyp
 
 
-"""
-Generating the CY hypersurface, with the ineffective divisors removed.
-"""
+
 def CY_Hypersurface(p: LatticePolytope, torus: list[[list]]):
+    
+    """
+    Generating the CY hypersurface, with the ineffective divisors removed.
+    """
+    
     #Identify fiber coordinates
     verts=p
     poly_verts = LatticePolytope(verts)
@@ -164,20 +187,27 @@ def CY_Hypersurface(p: LatticePolytope, torus: list[[list]]):
     weirs=sym.expand(batryev(kp,dualp,arrcoeff,kcoords))
     return kp,kcoords, weirs,letvar,dualp,arrcoeff
 
-"""
-Getting 2D base of the fibration, which is birational to P1 X C (after decompactifying)
-"""
+
+
 def get_2Dbase(p: LatticePolytope, xproj, yproj):
+    
+    """
+    Getting 2D base of the fibration, which is birational to P1 X C (after decompactifying)
+    """
+    
     newbase1=list()
     for i in range(len(p)):
         newbase1.append([int(np.dot(p[i],xproj)),int(np.dot(p[i],yproj))])
     return newbase1
 
 
-"""
-Removing non-flat flavor (non-compact) divisors
-"""
+
 def rem_nonflat_flav(p: LatticePolytope, coords,  letvar,  base, baseindex1,baseindex2,weirs):
+    
+    """
+    Removing non-flat flavor (non-compact) divisors
+    """
+    
     flavs=nfflavs(letvar,p,base,baseindex1,baseindex2)
     nbdowns,nbcoords=idnf(letvar,p,base,coords,flavs,baseindex1,baseindex2)
     nf=singmodel(weirs,coords,p,nbdowns)
@@ -185,10 +215,14 @@ def rem_nonflat_flav(p: LatticePolytope, coords,  letvar,  base, baseindex1,base
     letvar,model,p,base,coords,nfindex,nbcoords,nbdowns=remnf(letvar,nf2,nbcoords,nbdowns,p,base,coords)
     return letvar,model,p,base,coords,nfindex,nbcoords,nbdowns
 
-"""
-Removing non-flat compact divisors
-"""
+
+
 def rem_nonflat_comp(p: LatticePolytope, letvar,  base, basedivs,coords, baseindex1,baseindex2,weirs, checkdivs: list[[list]]):
+    
+    """
+    Removing non-flat compact divisors
+    """
+    
     nonflatdat=list()
     nonflatdatT=list()
     jk=quiverdata(letvar,weirs,checkdivs,p,base,basedivs,coords,baseindex1,baseindex2)
@@ -209,11 +243,13 @@ def rem_nonflat_comp(p: LatticePolytope, letvar,  base, basedivs,coords, baseind
 
 
 
-"""
-Blowing down divisors in the hypersurface equation (setting them to 1)
-"""
-#Blown-down hypersurface
+
 def singmodel(model,coords,divs,nbdowndivs):
+    
+    """
+    Blowing down divisors in the hypersurface equation (setting them to 1)
+    """
+    
     tempbk=list()
     for i in range(len(nbdowndivs)):
         tempbk.append(nbdowndivs[i][0])
@@ -222,10 +258,15 @@ def singmodel(model,coords,divs,nbdowndivs):
             model=model.subs({coords[j]:1})
     return model
 
-"""
-Identify flavor divisors
-"""
+
+
+
 def nfflavs(letvar,divs,divsbase,baseindex1,baseindex2):
+    
+    """
+    Identify flavor divisors
+    """
+    
     kaps=len(letvar)
     flavs=list()
     for i in range(len(divs)):
@@ -233,10 +274,15 @@ def nfflavs(letvar,divs,divsbase,baseindex1,baseindex2):
             flavs.append(divs[i])
     return flavs
 
-"""
-Identify non-flat divisors
-"""
+
+
+
 def idnf(letvar,divs,divsbase,coords,targetdivs,baseindex1,baseindex2):
+    
+    """
+    Identify non-flat divisors
+    """
+    
     kaps=len(letvar)
     nbdowns=list()
     nbcoords=list()
@@ -249,10 +295,15 @@ def idnf(letvar,divs,divsbase,coords,targetdivs,baseindex1,baseindex2):
             nbcoords.append(coords[i])            
     return nbdowns, nbcoords
 
-"""
-Remove non-flat divisors
-"""
+
+
+
 def remnf(letvar,model,nbcoords,nbdowns,divs,divsbase,coords):
+    
+    """
+    Remove non-flat divisors
+    """
+    
     nfindex=list()
     temp=divs.copy()
     tempb=divsbase.copy()
@@ -271,30 +322,45 @@ def remnf(letvar,model,nbcoords,nbdowns,divs,divsbase,coords):
             print(len(nfindex))
     return letvar,model,temp,tempb, tempc,nfindex,nbcoords,nbdowns
 
-"""
-Getting normalized base divisors
-"""
+
+
+
 def getbasedivs(divs,baseindex1,baseindex2):
+    
+    """
+    Getting normalized base divisors
+    """
+    
     basedivs=list()
     for j in range(len(divs)):
         if (divs[j][baseindex1]!=0 or divs[j][baseindex2]!=0):
             basedivs.append(([int(divs[j][baseindex1]/(math.gcd(divs[j][baseindex1],divs[j][baseindex2]))),int(divs[j][baseindex2]/(math.gcd(divs[j][baseindex1],divs[j][baseindex2])))]))
     return basedivs
 
-"""
-Getting the set of unique base divisors
-"""
+
+
+
 def undivs(divs):
+    
+    """
+    Getting the set of unique base divisors
+    """
+    
     undivs=list()
     for i in range(len(divs)):
         if divs[i] not in undivs:
             undivs.append(divs[i])
     return undivs
 
-"""
-Slope of compact base divisors (slope of a 2D line)
-"""
+
+
+
 def slcomp(divs):
+    
+    """
+    Slope of compact base divisors (slope of a 2D line)
+    """
+    
     slopes=list()
     compactdivs=list()
     
@@ -321,10 +387,14 @@ def slcomp(divs):
     return compactdivs,slopes
 
 
-"""
-Computing intersection data of base divisors (curves)
-"""
+
+
 def selfints(divs):
+    
+    """
+    Computing intersection data of base divisors (curves)
+    """
+    
     nums=list()
     nums.append('flavor curve')
     for i in range(len(divs)):
@@ -344,10 +414,13 @@ def selfints(divs):
     return nums
 
 
-"""
-Identifying neighboring divisors
-"""
+
 def neighdiv(basedivs,checkdiv):
+    
+    """
+    Identifying neighboring divisors
+    """
+    
     temp=slcomp(undivs(basedivs))[0]
     inds=temp.index(checkdiv)
     if inds==0:
@@ -358,10 +431,14 @@ def neighdiv(basedivs,checkdiv):
         return temp[inds-1],temp[inds],temp[inds+1]
 
     
-"""
-Getting 4D vertices from the 2D base vertices
-"""
+
+    
 def get4Dvert(divs2D,divs4D,divsbase,baseindex1,baseindex2):
+    
+    """
+    Getting 4D vertices from the 2D base vertices
+    """
+    
     temp=list()
     temp2=list()
     for i in range(len(divsbase)):
@@ -373,10 +450,14 @@ def get4Dvert(divs2D,divs4D,divsbase,baseindex1,baseindex2):
     return temp2
         
 
-"""
-Final model after non-flat divisors are removed
-"""
+
+    
 def finalmodel(letvar,model,checkdiv,divs,divsbase,bdivs,coords,baseindex1,baseindex2):
+    
+    """
+    Final model after non-flat divisors are removed
+    """
+    
     klo=neighdiv(bdivs,checkdiv)
     cap=get4Dvert(klo,divs,divsbase,baseindex1,baseindex2)
     #Add torus coordinates
@@ -388,10 +469,13 @@ def finalmodel(letvar,model,checkdiv,divs,divsbase,bdivs,coords,baseindex1,basei
     return remnf(letvar,nf2,nbcoords,nbdowns,divs,divsbase,coords)
 
 
-"""
-LST represented as a quiver
-"""
+
 def quiverdata(letvar,model,checkdivs,divs,divsbase,bdivs,coords,baseindex1,baseindex2):
+    
+    """
+    LST represented as a quiver
+    """
+    
     nfsdat=list()
     if len(checkdivs)!=0:
         for i in range(len(checkdivs)):
@@ -408,10 +492,14 @@ def quiverdata(letvar,model,checkdivs,divs,divsbase,bdivs,coords,baseindex1,base
         nfsdat.append([model,divs,divsbase,coords,[],[],[[],[]]])
     return nfsdat
 
-"""
-Check number of non-Kahler intersections of a non-flat divisor
-"""
+
+
 def numint(letvar,quivs,multipli,checkdivs,baseindex1,baseindex2):   
+    
+    """
+    Check number of non-Kahler intersections of a non-flat divisor
+    """
+    
     if len(quivs[4])!=0:
         quivs[0]=sym.Add.make_args(quivs[0].subs({quivs[5][quivs[4][multipli]]:0}))[0]
         tempty=list()
@@ -431,10 +519,12 @@ def numint(letvar,quivs,multipli,checkdivs,baseindex1,baseindex2):
 
 
 
-"""
-Generating quiver: including gauge and flavor algebras, their rank, Kacs labels and Coulomb Branch dimension
-"""
 def basedata(divs,divsbase,nonflatdat,baseindex1,baseindex2):
+    
+    """
+    Generating quiver: including gauge and flavor algebras, their rank, Kacs labels and Coulomb Branch dimension
+    """
+    
     l1=baseindex1
     l2=baseindex2
     gaugevert=list()
@@ -499,10 +589,14 @@ def basedata(divs,divsbase,nonflatdat,baseindex1,baseindex2):
                 CBdim=CBdim+len(kaclabels[i])-2
     return kaclabels,CBdim-1
 
-"""
-Little String Charges computed from base data
-"""
+
+
 def lscharge(divs):    
+    
+    """
+    Little String Charges computed from base data
+    """
+    
     selfs=selfints(slcomp(undivs(divs))[0])
     selfs.pop(0)
     selfs.pop(-1)
@@ -519,10 +613,14 @@ def lscharge(divs):
     LScharges=abs(ns/-min(abs(ns)))
     return intmat,LScharges
 
-"""
-Computing 2-group structure constants (k_{P}, k_{R})
-"""
+
+
 def Two_Group(p: LatticePolytope,base,basedivs,nftotdats,baseindex1,baseindex2): 
+    
+    """
+    Computing 2-group structure constants (k_{P}, k_{R})
+    """
+    
     intmat,LScharges=lscharge(basedivs)
     kpoincare=0
     kR=0
